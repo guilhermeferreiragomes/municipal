@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Text, TextInput, TouchableOpacity, View, Alert, SafeAreaView, Keyboard, TouchableWithoutFeedback } from 'react-native';
+import { useRouter } from 'expo-router';
 
-export default function reportar() {
+export default function Reportar() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-
+  const router = useRouter();
   const submitTicket = async () => {
     Keyboard.dismiss();
 
@@ -38,37 +39,39 @@ export default function reportar() {
   return (
     <SafeAreaView className="flex-1 bg-slate-50 justify-center">
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View className="px-6">
-        <Text className="text-2xl font-bold text-slate-800 text-center mb-8">
-          Report an Incident
-        </Text>
-        
-        <Text className="text-sm font-semibold text-slate-600 mb-2">Title</Text>
-        <TextInput
-          className="bg-white border border-slate-200 rounded-lg p-3 text-base mb-5"
-          placeholder="Ex: Fallen tree..."
-          value={title}
-          onChangeText={setTitle}
-        />
+        <View className="px-6">
+          <Text className="text-2xl font-bold text-slate-800 text-center mb-8">Report an Incident</Text>
+          
+          <Text className="text-sm font-semibold text-slate-600 mb-2">Title</Text>
+          <TextInput
+            className="bg-white border border-slate-200 rounded-lg p-3 text-base mb-5"
+            placeholder="Ex: Fallen tree..."
+            value={title}
+            onChangeText={setTitle}
+          />
 
-        <Text className="text-sm font-semibold text-slate-600 mb-2">Description</Text>
-        <TextInput
-          className="bg-white border border-slate-200 rounded-lg p-3 text-base mb-5 h-24"
-          placeholder="Please describe the problem in detail..."
-          multiline={true}
-          numberOfLines={4}
-          style={{ textAlignVertical: 'top' }}
-          value={description}
-          onChangeText={setDescription}
-        />
+          <Text className="text-sm font-semibold text-slate-600 mb-2">Description</Text>
+          <TextInput
+            className="bg-white border border-slate-200 rounded-lg p-3 text-base mb-5 h-24"
+            placeholder="Please describe the problem in detail..."
+            multiline={true}
+            numberOfLines={4}
+            style={{ textAlignVertical: 'top' }}
+            value={description}
+            onChangeText={setDescription}
+          />
 
-        <TouchableOpacity 
-          className="bg-blue-600 py-4 rounded-lg items-center mt-2" 
-          onPress={submitTicket}
-        >
-          <Text className="text-white text-base font-bold">Send Incident</Text>
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity className="bg-blue-600 py-4 rounded-lg items-center mt-2" onPress={submitTicket}>
+            <Text className="text-white text-base font-bold">Send Incident</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            className="py-4 rounded-lg items-center mt-3 border border-blue-600" 
+            onPress={() => router.push('/(cidadao)/historico')}
+          >
+            <Text className="text-blue-600 text-base font-bold">View History</Text>
+          </TouchableOpacity>
+        </View>
       </TouchableWithoutFeedback>
     </SafeAreaView>
   );
