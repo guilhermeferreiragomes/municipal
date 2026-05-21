@@ -3,6 +3,7 @@
     "name": "app-cidadao",
     "slug": "app-cidadao",
     "version": "1.0.0",
+    "scheme": "municipal",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",

@@ -29,7 +29,7 @@ public class TicketResource {
 
     @PUT
     @Path("/{id}/status")
-    public Response updateTicketStatus(@PathParam("id") String id, Ticket ticketUpdate) { // Mongo creats werid IDs
+    public Response updateTicketStatus(@PathParam("id") String id, Ticket ticketUpdate) { // Search ID in Mongo
 
         Ticket ticket = Ticket.findById(new ObjectId(id));
         if (ticket == null) {
