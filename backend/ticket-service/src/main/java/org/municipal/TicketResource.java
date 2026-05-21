@@ -10,7 +10,6 @@ import org.bson.types.ObjectId;
 @Path("/tickets") // URL for the tickets "localhost:8080/tickets"
 @Produces(MediaType.APPLICATION_JSON) // Answer with Json
 @Consumes(MediaType.APPLICATION_JSON) // Receive a Json
-
 public class TicketResource {
 
     // Read the list of all tickets
@@ -23,24 +22,34 @@ public class TicketResource {
     @POST
     public Response createTicket(Ticket t) {
         t.persist(); // To save into MongoDB
-        return Response.status(Response.Status.CREATED).entity(t).build(); // Returns "success" with the created ticket
-        // converted to JSON
+        return Response.status(Response.Status.CREATED).entity(t).build();
     }
 
+    // Update an existing ticket
     @PUT
-    @Path("/{id}/status")
-    public Response updateTicketStatus(@PathParam("id") String id, Ticket ticketUpdate) { // Search ID in Mongo
-
+    @Path("/{id}")
+    public Response updateTicketStatus(@PathParam("id") String id, Ticket ticketUpdate) {
         Ticket ticket = Ticket.findById(new ObjectId(id));
         if (ticket == null) {
             return Response.status(Response.Status.NOT_FOUND).entity("Ticket not found.").build();
         }
 
-        ticket.status = ticketUpdate.status; // Updates the status of the tickets
-
+        ticket.status = ticketUpdate.status; // Updates the status
         ticket.update(); // Saves in MongoDB
 
         return Response.ok(ticket).build();
     }
 
+    // Delete a ticket
+    @DELETE
+    @Path("/{id}")
+    public Response deleteTicket(@PathParam("id") String id) {
+        Ticket ticket = Ticket.findById(new ObjectId(id));
+        if (ticket == null) {
+            return Response.status(Response.Status.NOT_FOUND).entity("Ticket not found.").build();
+        }
+
+        ticket.delete(); // Deletes from MongoDB
+        return Response.noContent().build();
+    }
 }

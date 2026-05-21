@@ -9,8 +9,6 @@ public class Ticket extends PanacheMongoEntity {
         OPEN,
         IN_PROGRESS,
         RESOLVED,
-        CLOSED,
-        REJECTED
     }
 
     public String title;
