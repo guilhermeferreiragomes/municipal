@@ -16,9 +16,11 @@ export default function Historico() {
       const data = await response.json();
       setTickets(data);
     } catch (error) {
-      console.error("Erro ao carregar tickets:", error);
+      console.error("Couldn't load tickets.", error);
     }
   };
+
+  // Tirar historico global e meter do user
 
   return (
     <SafeAreaView className="flex-1 bg-slate-50">

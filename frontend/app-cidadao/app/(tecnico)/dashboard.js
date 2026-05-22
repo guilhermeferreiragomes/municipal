@@ -52,6 +52,8 @@ export default function TechnicalDashboard() {
     }
   });
 
+  // Meter a aparecer so os tickets atribuidos ao tecnico e nao todos
+  
   return (
     <SafeAreaView className="flex-1 bg-slate-900">
       <View className="px-6 py-6 flex-1">

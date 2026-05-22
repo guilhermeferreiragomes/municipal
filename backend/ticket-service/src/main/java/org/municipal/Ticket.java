@@ -9,6 +9,7 @@ public class Ticket extends PanacheMongoEntity {
         OPEN,
         IN_PROGRESS,
         RESOLVED,
+        REJECTED,
     }
 
     public String title;
@@ -17,9 +18,11 @@ public class Ticket extends PanacheMongoEntity {
     public String imageUrl;
     public LocalDateTime createdAt;
 
-    // Construtor
+    public String assignedTo;
+
     public Ticket() {
         this.createdAt = LocalDateTime.now();
         this.status = TicketStatus.OPEN;
+        this.assignedTo = ""; // Começa vazio por defeito
     }
 }

@@ -13,15 +13,20 @@ public class DataSeeder {
 
     void onStart(@Observes StartupEvent ev) {
 
+        // 🔴 LINHA ADICIONADA PARA LIMPAR A BD TEMPORARIAMENTE
+        userRepository.deleteAll();
+
         if (userRepository.count() == 0) {
 
-            // Creates the user objects in memory with English details
+            // Creating users
             User citizen = new User("John Doe", "citizen@test.com", "123456", "CITIZEN");
             User technician = new User("Engineer Smith", "tech@test.com", "654321", "TECHNICIAN");
+            User admin = new User("Admin", "admin@admin.com", "admin", "ADMIN");
 
             // Persists them in MongoDB
             userRepository.persist(citizen);
             userRepository.persist(technician);
+            userRepository.persist(admin);
 
             System.out.println("✅ Test users successfully created in MongoDB!");
         } else {

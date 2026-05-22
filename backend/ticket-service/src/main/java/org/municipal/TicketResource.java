@@ -34,8 +34,12 @@ public class TicketResource {
             return Response.status(Response.Status.NOT_FOUND).entity("Ticket not found.").build();
         }
 
-        ticket.status = ticketUpdate.status; // Updates the status
-        ticket.update(); // Saves in MongoDB
+        ticket.status = ticketUpdate.status;
+
+        // 🔴 NOVA LINHA: Atualiza também o técnico atribuído
+        ticket.assignedTo = ticketUpdate.assignedTo;
+
+        ticket.update();
 
         return Response.ok(ticket).build();
     }
