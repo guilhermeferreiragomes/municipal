@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Text, TextInput, TouchableOpacity, View, Alert, SafeAreaView, Keyboard, TouchableWithoutFeedback, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
+import { API_URL } from '../../config';
 
 export default function reportar() {
   const [title, setTitle] = useState('');
@@ -9,43 +10,34 @@ export default function reportar() {
   const [imageUri, setImageUri] = useState(null);
   const router = useRouter();
 
-  // Function to open the Gallery
   const pickImageFromGallery = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
     if (permissionResult.granted === false) {
       Alert.alert("Permission Required", "You need to allow access to your photos.");
       return;
     }
-
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
       quality: 0.8,
     });
-
     if (!result.canceled) {
       setImageUri(result.assets[0].uri);
     }
   };
 
   const takePhotoWithCamera = async () => {
-    // Ask for Camera permissions
     const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
-
     if (permissionResult.granted === false) {
       Alert.alert("Permission Required", "You need to allow access to your camera.");
       return;
     }
-
-    // Launch the camera
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
       aspect: [4, 3],
       quality: 0.8,
     });
-
     if (!result.canceled) {
       setImageUri(result.assets[0].uri);
     }
@@ -53,14 +45,14 @@ export default function reportar() {
 
   const submitTicket = async () => {
     Keyboard.dismiss();
-
     if (!title || !description) {
       Alert.alert('Error', 'Please fill in the title and description.');
       return;
     }
 
     try {
-      const response = await fetch('http://192.168.1.131:8080/tickets', {
+      // Usar a variável global aqui
+      const response = await fetch(`${API_URL}/tickets`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

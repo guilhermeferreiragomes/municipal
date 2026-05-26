@@ -13,8 +13,6 @@ public class DataSeeder {
 
     void onStart(@Observes StartupEvent ev) {
 
-        // 🔴 LINHA ADICIONADA PARA LIMPAR A BD TEMPORARIAMENTE
-        userRepository.deleteAll();
 
         if (userRepository.count() == 0) {
 

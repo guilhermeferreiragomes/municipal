@@ -3,15 +3,14 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend, BarChart, Ba
 
 export default function Dashboard({ activeTab }) {
   const [tickets, setTickets] = useState([]);
-  const [technicians, setTechnicians] = useState([]); // Guarda a lista de técnicos
+  const [technicians, setTechnicians] = useState([]);
 
-  useEffect(() => {
-    // Busca os tickets E os técnicos ao mesmo tempo
+useEffect(() => {
     const fetchData = async () => {
       try {
         const [ticketsRes, techsRes] = await Promise.all([
           fetch('/tickets'),
-          fetch('/users?role=TECHNICIAN') // Pede ao Java só os técnicos!
+          fetch('/users?role=TECHNICIAN') 
         ]);
         
         setTickets(await ticketsRes.json());
@@ -21,12 +20,19 @@ export default function Dashboard({ activeTab }) {
       }
     };
     fetchData();
+
+    // Reload evety 5 seconds
+    const intervalId = setInterval(() => {
+      fetchData();
+    }, 5000); 
+
+    return () => clearInterval(intervalId);
   }, []);
 
-  // Função genérica para atualizar qualquer campo do Ticket (Status ou AssignedTo)
-  const handleTicketUpdate = async (ticket, field, value) => {
-    if (ticket[field] === value) return; // Se não mudou nada, ignora
 
+  const handleTicketUpdate = async (ticket, field, value) => {
+    if (ticket[field] === value)
+      return;
     const updatedTicket = { ...ticket, [field]: value };
 
     try {

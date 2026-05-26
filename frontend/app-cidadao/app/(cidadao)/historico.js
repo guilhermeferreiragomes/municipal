@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, SafeAreaView } from 'react-native';
 import { useRouter } from 'expo-router';
+import { API_URL } from '../../config';
 
 export default function Historico() {
   const [tickets, setTickets] = useState([]);
@@ -12,15 +13,14 @@ export default function Historico() {
 
   const fetchTickets = async () => {
     try {
-      const response = await fetch('http://192.168.1.131:8080/tickets');
+      // Usar a variável global aqui
+      const response = await fetch(`${API_URL}/tickets`);
       const data = await response.json();
       setTickets(data);
     } catch (error) {
       console.error("Couldn't load tickets.", error);
     }
   };
-
-  // Tirar historico global e meter do user
 
   return (
     <SafeAreaView className="flex-1 bg-slate-50">

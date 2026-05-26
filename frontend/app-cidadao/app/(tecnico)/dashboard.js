@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, SafeAreaView, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
+import { View, Text, FlatList, TouchableOpacity, SafeAreaView, Alert, RefreshControl } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { API_URL } from '../../config'; 
 
 export default function TechnicalDashboard() {
   const [tickets, setTickets] = useState([]);
   const [activeTab, setActiveTab] = useState('pending');
+  const [refreshing, setRefreshing] = useState(false);
+  
   const router = useRouter();
+  const { techName } = useLocalSearchParams();
 
   useEffect(() => {
     fetchAllTickets();
@@ -13,7 +17,7 @@ export default function TechnicalDashboard() {
 
   const fetchAllTickets = async () => {
     try {
-      const response = await fetch('http://192.168.1.131:8080/tickets');
+      const response = await fetch(`${API_URL}/tickets`);
       const data = await response.json();
       setTickets(data);
     } catch (error) {
@@ -21,30 +25,40 @@ export default function TechnicalDashboard() {
     }
   };
 
-  const updateTicketStatus = async (id, newStatus) => {
-    try {
-      const response = await fetch(`http://192.168.1.131:8080/tickets/${id}/status`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: newStatus })
-    });
-    if (response.status === 200) {
-      fetchAllTickets(); // Refresh list
-      
-      if (newStatus === 'RESOLVED') {
-        Alert.alert("Success", `Ticket has been resolved!`);
-      }
-    } else {
-      Alert.alert("Error", "Could not update the ticket status.");
-    }
-  } catch (error) {
-    Alert.alert("Connection Error", "Error contacting the server.");
-  }
-};
+  // Refresh tickets
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchAllTickets();
+    setRefreshing(false);
+  };
 
-  // Filter tickets based on the active tab
+  const updateTicketStatus = async (ticket, newStatus) => {
+    try {
+      const response = await fetch(`${API_URL}/tickets/${ticket.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...ticket, status: newStatus })
+      });
+
+      if (response.status === 200) {
+        fetchAllTickets(); 
+        
+        if (newStatus === 'RESOLVED') {
+          Alert.alert("Success", `Ticket has been resolved!`);
+        }
+      } else {
+        Alert.alert("Error", "Could not update the ticket status.");
+      }
+    } catch (error) {
+      Alert.alert("Connection Error", "Error contacting the server.");
+    }
+  };
+
   const filteredTickets = tickets.filter(ticket => {
     const status = ticket.status || 'OPEN';
+    
+    if (ticket.assignedTo !== techName) return false;
+
     if (activeTab === 'pending') {
       return status === 'OPEN' || status === 'IN_PROGRESS';
     } else {
@@ -52,8 +66,6 @@ export default function TechnicalDashboard() {
     }
   });
 
-  // Meter a aparecer so os tickets atribuidos ao tecnico e nao todos
-  
   return (
     <SafeAreaView className="flex-1 bg-slate-900">
       <View className="px-6 py-6 flex-1">
@@ -61,14 +73,25 @@ export default function TechnicalDashboard() {
         <View className="flex-row justify-between items-center mb-6">
           <View>
             <Text className="text-2xl font-bold text-white">Technical Panel</Text>
-            <Text className="text-slate-400 text-xs mt-1">Urban Incident Management</Text>
+            <Text className="text-slate-400 text-xs mt-1">Worker: {techName || 'Authenticated'}</Text>
           </View>
-          <TouchableOpacity 
-            onPress={() => router.replace('/')}
-            className="bg-slate-800 px-4 py-2 rounded-lg border border-slate-700"
-          >
-            <Text className="text-slate-300 font-semibold text-sm">Logout</Text>
-          </TouchableOpacity>
+          
+          <View className="flex-row items-center gap-3">
+            <TouchableOpacity 
+              onPress={onRefresh}
+              className="bg-slate-800 px-3 py-2 rounded-lg border border-slate-700"
+              title="Refresh tickets"
+            >
+              <Text className="text-blue-400 font-bold text-sm">🔄</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              onPress={() => router.replace('/')}
+              className="bg-slate-800 px-4 py-2 rounded-lg border border-slate-700"
+            >
+              <Text className="text-slate-300 font-semibold text-sm">Logout</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View className="flex-row bg-slate-800 p-1 rounded-xl mb-6 border border-slate-700">
@@ -92,12 +115,20 @@ export default function TechnicalDashboard() {
         </View>
 
         <FlatList
-          data={filteredTickets} // Uses the filtered list
+          data={filteredTickets}
           keyExtractor={(item) => item.id}
+          // 5. ADICIONADO: Sistema nativo de deslizar para atualizar
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor="#3b82f6" // Cor da "rodinha" de loading no iOS
+              colors={['#3b82f6']} // Cor da "rodinha" de loading no Android
+            />
+          }
           renderItem={({ item }) => {
             const status = item.status || 'OPEN';
             
-            // Badge color logic
             let statusBg = 'bg-amber-500/20';
             let statusText = 'text-amber-400';
             if (status === 'IN_PROGRESS') {
@@ -124,7 +155,7 @@ export default function TechnicalDashboard() {
                 {status === 'OPEN' && (
                   <TouchableOpacity 
                     className="bg-amber-500 py-3 rounded-lg items-center"
-                    onPress={() => updateTicketStatus(item.id, 'IN_PROGRESS')}
+                    onPress={() => updateTicketStatus(item, 'IN_PROGRESS')}
                   >
                     <Text className="text-slate-950 font-bold text-sm">Start Work</Text>
                   </TouchableOpacity>
@@ -133,7 +164,7 @@ export default function TechnicalDashboard() {
                 {status === 'IN_PROGRESS' && (
                   <TouchableOpacity 
                     className="bg-blue-500 py-3 rounded-lg items-center"
-                    onPress={() => updateTicketStatus(item.id, 'RESOLVED')}
+                    onPress={() => updateTicketStatus(item, 'RESOLVED')}
                   >
                     <Text className="text-white font-bold text-sm">Mark as Resolved</Text>
                   </TouchableOpacity>
@@ -142,7 +173,7 @@ export default function TechnicalDashboard() {
             );
           }}
           ListEmptyComponent={
-            <Text className="text-center text-slate-500 mt-10">No incidents in this section.</Text>
+            <Text className="text-center text-slate-500 mt-10">No incidents assigned to you.</Text>
           }
         />
       </View>

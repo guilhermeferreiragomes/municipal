@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, SafeAreaView, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { useRouter } from 'expo-router';
+import { API_URL } from '../config';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -16,20 +17,22 @@ export default function LoginScreen() {
     }
 
     try {
-      const response = await fetch('http://192.168.1.131:8080/auth/login', {
+      const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email, password: password }),
       });
 
-      if (response.status === 200) {
-        const user = await response.json();
-        
-        // Adjusts the page according to the role
-        if (user.role === 'CITIZEN') {
-          router.replace('/(cidadao)/reportar');
-        } else if (user.role === 'TECHNICIAN') {
-          router.replace('/(tecnico)/dashboard');
+        if (response.status === 200) {
+          const user = await response.json();
+          
+          if (user.role === 'CITIZEN') {
+            router.replace('/(cidadao)/reportar');
+          } else if (user.role === 'TECHNICIAN') {
+            router.replace({
+              pathname: '/(tecnico)/dashboard',
+              params: { techName: user.name }
+            });
         }
       } else {
         Alert.alert('Login Failed', 'Incorrect email or password.');
