@@ -188,47 +188,51 @@ export default function Dashboard({ activeTab }) {
         </div>
       )}
 
-      {selectedTicket && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl shadow-2xl w-900px max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+{selectedTicket && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-200 p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
             
-            <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-white">
-              <div>
-                <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1">Control Panel</p>
-                <div className="flex items-center gap-3">
-                  <h2 className="text-2xl font-bold text-slate-800">Incident Details</h2>
-                  <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-slate-200">
-                    {selectedTicket.category || 'OTHER'}
-                  </span>
-                </div>
+            {/* CABEÇALHO MAIS ESTREITO E LIMPO */}
+            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white z-10">
+              <div className="flex items-center gap-3">
+                <h2 className="text-xl font-bold text-slate-800">Incident Details</h2>
+                <span className="bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-widest border border-slate-200">
+                  {selectedTicket.category || 'OTHER'}
+                </span>
               </div>
               <button 
                 onClick={() => setSelectedTicket(null)} 
-                className="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-500 w-10 h-10 rounded-full flex items-center justify-center font-bold transition-colors"
+                className="cursor-pointer bg-slate-50 hover:bg-slate-100 text-slate-500 w-8 h-8 rounded-full flex items-center justify-center font-bold transition-colors"
               >
                 ✕
               </button>
             </div>
             
-            <div className="p-8 overflow-y-auto flex gap-10 bg-slate-50/50">
+            {/* CORPO - DUAS COLUNAS BEM DIMENSIONADAS */}
+            <div className="flex-1 overflow-y-auto flex flex-col md:flex-row bg-white">
                
-               <div className="flex-1 space-y-8">
+               {/* LADO ESQUERDO: INFORMAÇÃO COMPACTA */}
+               <div className="w-full md:w-2/3 p-6 space-y-6">
+                  
+                  {/* Info */}
                   <div>
-                    <h3 className="text-xl font-black text-slate-900 mb-3">{selectedTicket.title}</h3>
-                    <p className="text-slate-600 leading-relaxed text-sm bg-white p-4 rounded-xl border border-slate-200">
+                    <h3 className="text-lg font-bold text-slate-800 mb-2">{selectedTicket.title}</h3>
+                    <p className="text-slate-600 leading-relaxed text-sm bg-slate-50 p-4 rounded-xl border border-slate-100">
                       {selectedTicket.description}
                     </p>
                   </div>
 
+                  {/* Imagem (Mais pequena e bem enquadrada) */}
                   {selectedTicket.imageUrl && selectedTicket.imageUrl !== 'No image attached' && (
                     <div>
                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Attached Evidence</h4>
-                       <div className="rounded-xl overflow-hidden border border-slate-200 shadow-sm">
-                          <img src={selectedTicket.imageUrl} alt="Evidence" className="w-full h-64 object-cover" />
+                       <div className="rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-slate-50">
+                          <img src={selectedTicket.imageUrl} alt="Evidence" className="w-full h-56 object-contain" />
                        </div>
                     </div>
                   )}
 
+                  {/* Mapa (Botão mais subtil) */}
                   <div>
                      <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Exact Location</h4>
                      {selectedTicket.latitude && selectedTicket.longitude ? (
@@ -236,71 +240,82 @@ export default function Dashboard({ activeTab }) {
                           href={`http://googleusercontent.com/maps.google.com/maps?q=${selectedTicket.latitude},${selectedTicket.longitude}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-3 bg-blue-50 w-full p-4 rounded-xl border border-blue-100 text-blue-700 hover:bg-blue-100 transition-colors shadow-sm"
+                          className="flex items-center gap-3 bg-blue-50/50 hover:bg-blue-50 w-full p-4 rounded-xl border border-blue-100 transition-colors shadow-sm"
                         >
-                          <span className="text-3xl">🗺️</span>
+                          <span className="text-2xl">🗺️</span>
                           <div>
-                            <p className="font-bold">Open in Google Maps</p>
+                            <p className="font-bold text-sm text-blue-800">Open in Google Maps</p>
                             <p className="text-xs text-blue-600/70 font-medium mt-0.5">View coordinates natively</p>
                           </div>
                         </a>
                      ) : (
-                        <div className="bg-slate-100 p-4 rounded-xl border border-slate-200">
+                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
                            <p className="text-sm text-slate-500 italic">No GPS coordinates captured for this incident.</p>
                         </div>
                      )}
                   </div>
                </div>
 
-               <div className="w-72 space-y-6">
-                  <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                    
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Urgency Level</label>
-                    <select
-                        value={selectedTicket.priority || 'LOW'}
-                        onChange={(e) => handleTicketUpdate(selectedTicket, 'priority', e.target.value)}
-                        className="w-full p-3 rounded-lg border-2 border-slate-200 font-bold text-slate-700 focus:border-blue-500 focus:outline-none cursor-pointer mb-6 transition-colors"
-                      >
-                        <option value="LOW">🔵 LOW PRIORITY</option>
-                        <option value="MEDIUM">🟡 MEDIUM PRIORITY</option>
-                        <option value="HIGH">🔴 HIGH PRIORITY</option>
-                    </select>
+               {/* LADO DIREITO: BARRA DE CONTROLOS APERTADA */}
+               <div className="w-full md:w-1/3 p-6 bg-slate-50 border-l border-slate-100 flex flex-col shrink-0">
+                  
+                  <div className="flex-1 space-y-5">
+                    {/* Urgência */}
+                    <div>
+                      <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1.5">Urgency Level</label>
+                      <select
+                          value={selectedTicket.priority || 'LOW'}
+                          onChange={(e) => handleTicketUpdate(selectedTicket, 'priority', e.target.value)}
+                          className="w-full p-2.5 text-sm rounded-lg border border-slate-200 font-bold text-slate-700 focus:border-blue-500 focus:outline-none cursor-pointer bg-white shadow-sm"
+                        >
+                          <option value="LOW">🔵 LOW PRIORITY</option>
+                          <option value="MEDIUM">🟡 MEDIUM PRIORITY</option>
+                          <option value="HIGH">🔴 HIGH PRIORITY</option>
+                      </select>
+                    </div>
 
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Set Status</label>
-                    <select
-                        value={selectedTicket.status}
-                        onChange={(e) => handleTicketUpdate(selectedTicket, 'status', e.target.value)}
-                        className="w-full p-3 rounded-lg border-2 border-slate-200 font-bold text-slate-700 focus:border-blue-500 focus:outline-none cursor-pointer mb-6 transition-colors"
-                      >
-                        <option value="OPEN">🔴 OPEN</option>
-                        <option value="IN_PROGRESS">🟡 IN PROGRESS</option>
-                        <option value="RESOLVED">🟢 RESOLVED</option>
-                    </select>
+                    {/* Estado */}
+                    <div>
+                      <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1.5">Set Status</label>
+                      <select
+                          value={selectedTicket.status}
+                          onChange={(e) => handleTicketUpdate(selectedTicket, 'status', e.target.value)}
+                          className="w-full p-2.5 text-sm rounded-lg border border-slate-200 font-bold text-slate-700 focus:border-blue-500 focus:outline-none cursor-pointer bg-white shadow-sm"
+                        >
+                          <option value="OPEN">🔴 OPEN</option>
+                          <option value="IN_PROGRESS">🟡 IN PROGRESS</option>
+                          <option value="RESOLVED">🟢 RESOLVED</option>
+                      </select>
+                    </div>
 
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Delegate to Team</label>
-                    <select
-                        value={selectedTicket.assignedTo || ''}
-                        onChange={(e) => handleTicketUpdate(selectedTicket, 'assignedTo', e.target.value)}
-                        className="w-full p-3 rounded-lg border-2 border-slate-200 font-bold text-slate-700 focus:border-blue-500 focus:outline-none cursor-pointer transition-colors"
-                      >
-                        <option value="">-- Unassigned --</option>
-                        {technicians.map((tech) => (
-                          <option key={tech.id} value={tech.name}>{tech.name}</option>
-                        ))}
-                    </select>
+                    {/* Delegação */}
+                    <div>
+                      <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1.5">Delegate to Team</label>
+                      <select
+                          value={selectedTicket.assignedTo || ''}
+                          onChange={(e) => handleTicketUpdate(selectedTicket, 'assignedTo', e.target.value)}
+                          className="w-full p-2.5 text-sm rounded-lg border border-slate-200 font-bold text-slate-700 focus:border-blue-500 focus:outline-none cursor-pointer bg-white shadow-sm"
+                        >
+                          <option value="">-- Unassigned --</option>
+                          {technicians.map((tech) => (
+                            <option key={tech.id} value={tech.name}>{tech.name}</option>
+                          ))}
+                      </select>
+                    </div>
                   </div>
 
-                  <div className="space-y-3">
+                  {/* Botões de Ação Pequenos e Normais */}
+                  <div className="mt-6 space-y-3 pt-6 border-t border-slate-200">
                     <button 
                        onClick={() => setSelectedTicket(null)}
-                       className="w-full py-4 flex items-center justify-center gap-2 text-white bg-blue-600 hover:bg-blue-700 rounded-xl font-bold transition-colors cursor-pointer shadow-md"
+                       className="w-full py-2.5 flex items-center justify-center gap-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-bold transition-colors shadow-sm cursor-pointer"
                     >
                        💾 Save Changes
                     </button>
 
                     <button 
                        onClick={() => handleDeleteTicket(selectedTicket.id)}
-                       className="w-full py-3 flex items-center justify-center gap-2 text-red-600 bg-red-50 hover:bg-red-100 border border-red-100 rounded-xl font-bold transition-colors cursor-pointer"
+                       className="w-full py-2 flex items-center justify-center gap-2 text-red-600 bg-red-50 hover:bg-red-100 border border-red-100 rounded-lg text-sm font-bold transition-colors cursor-pointer"
                     >
                        🗑️ Delete Ticket
                     </button>

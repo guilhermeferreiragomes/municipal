@@ -60,7 +60,7 @@ export default function TechnicalDashboard() {
     Linking.openURL(url);
   };
 
-  const filteredTickets = tickets.filter(ticket => {
+const filteredTickets = tickets.filter(ticket => {
     const status = ticket.status || 'OPEN';
     if (ticket.assignedTo !== techName) return false;
     if (activeTab === 'pending') {
@@ -68,8 +68,20 @@ export default function TechnicalDashboard() {
     } else {
       return status === 'RESOLVED';
     }
+  }).sort((a, b) => {
+    const priorityWeights = {
+      'HIGH': 3,
+      'MEDIUM': 2,
+      'LOW': 1
+    };
+    
+    const weightA = priorityWeights[a.priority] || 1;
+    const weightB = priorityWeights[b.priority] || 1;
+
+    return weightB - weightA;
   });
 
+  
   return (
     <SafeAreaView className="flex-1 bg-slate-900">
       <View className="px-6 py-6 flex-1">

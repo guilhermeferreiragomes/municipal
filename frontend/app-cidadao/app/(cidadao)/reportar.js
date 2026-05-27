@@ -15,6 +15,23 @@ export default function reportar() {
   const router = useRouter();
   const { citizenEmail } = useLocalSearchParams();
 
+  const fetchUserLocation = async () => {
+    let { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission Denied', 'We need your location to know where the incident is.');
+      return;
+    }
+    let currentLocation = await Location.getCurrentPositionAsync({});
+    setLocation({
+      latitude: currentLocation.coords.latitude,
+      longitude: currentLocation.coords.longitude,
+    });
+  };
+  useEffect(() => {
+    fetchUserLocation();
+  }, []);
+
+
   useEffect(() => {
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
@@ -97,6 +114,7 @@ export default function reportar() {
         setImageUri(null); 
         setLocation(null);
         setCategory('OTHER');
+        fetchUserLocation();
       } else {
         Alert.alert('Error', 'Server failed.');
       }
