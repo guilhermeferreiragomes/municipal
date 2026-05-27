@@ -1,14 +1,35 @@
-import React, { useState } from 'react';
-import { Text, TextInput, TouchableOpacity, View, Alert, SafeAreaView, Keyboard, TouchableWithoutFeedback, Image } from 'react-native';
-import { useRouter } from 'expo-router';
+import React, { useState, useEffect } from 'react';
+import { Text, TextInput, TouchableOpacity, View, Alert, SafeAreaView, Keyboard, TouchableWithoutFeedback, Image, ScrollView } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
+import * as Location from 'expo-location';
 import { API_URL } from '../../config';
 
 export default function reportar() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [imageUri, setImageUri] = useState(null);
+  const [location, setLocation] = useState(null);
+  const [category, setCategory] = useState('OTHER');
+  
   const router = useRouter();
+  const { citizenEmail } = useLocalSearchParams();
+
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission Denied', 'We need your location to know where the incident is.');
+        return;
+      }
+
+      let currentLocation = await Location.getCurrentPositionAsync({});
+      setLocation({
+        latitude: currentLocation.coords.latitude,
+        longitude: currentLocation.coords.longitude,
+      });
+    })();
+  }, []);
 
   const pickImageFromGallery = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -19,11 +40,13 @@ export default function reportar() {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [4, 3],
-      quality: 0.8,
+      aspect: [9, 16],
+      quality: 0.6,
+      base64: true,
     });
+    
     if (!result.canceled) {
-      setImageUri(result.assets[0].uri);
+      setImageUri('data:image/jpeg;base64,' + result.assets[0].base64);
     }
   };
 
@@ -35,11 +58,13 @@ export default function reportar() {
     }
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
-      aspect: [4, 3],
-      quality: 0.8,
+      aspect: [9, 16],
+      quality: 0.6,
+      base64: true,
     });
+    
     if (!result.canceled) {
-      setImageUri(result.assets[0].uri);
+      setImageUri('data:image/jpeg;base64,' + result.assets[0].base64);
     }
   };
 
@@ -51,14 +76,17 @@ export default function reportar() {
     }
 
     try {
-      // Usar a variável global aqui
       const response = await fetch(`${API_URL}/tickets`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: title,
           description: description,
-          imageUrl: imageUri || 'No image attached' 
+          imageUrl: imageUri || 'No image attached',
+          latitude: location ? location.latitude : null,
+          longitude: location ? location.longitude : null,
+          category: category,
+          createdBy: citizenEmail || 'anonymous' 
         }),
       });
 
@@ -67,6 +95,8 @@ export default function reportar() {
         setTitle('');
         setDescription('');
         setImageUri(null); 
+        setLocation(null);
+        setCategory('OTHER');
       } else {
         Alert.alert('Error', 'Server failed.');
       }
@@ -76,9 +106,9 @@ export default function reportar() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50 justify-center">
+    <SafeAreaView className="flex-1 bg-slate-50">
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View className="px-6">
+        <ScrollView className="px-6 py-8" showsVerticalScrollIndicator={false}>
           <Text className="text-2xl font-bold text-slate-800 text-center mb-8">Report an Incident</Text>
           
           <Text className="text-sm font-semibold text-slate-600 mb-2">Title</Text>
@@ -88,6 +118,36 @@ export default function reportar() {
             value={title}
             onChangeText={setTitle}
           />
+
+          <Text className="text-sm font-semibold text-slate-600 mb-2">Category</Text>
+          <View className="flex-row flex-wrap gap-2 mb-5">
+            {[
+              { id: 'ROADS', label: '🛣️ Roads' },
+              { id: 'LIGHTING', label: '💡 Lighting' },
+              { id: 'TRASH', label: '🗑️ Trash' },
+              { id: 'WATER', label: '💧 Water & Sewage' },
+              { id: 'GREENERY', label: '🌳 Parks & Trees' },
+              { id: 'TRAFFIC', label: '🚦 Traffic Signs' },
+              { id: 'VANDALISM', label: '🖍️ Vandalism' },
+              { id: 'OTHER', label: '❓ Other' }
+            ].map((cat) => (
+              <TouchableOpacity
+                key={cat.id}
+                onPress={() => setCategory(cat.id)}
+                className={`px-4 py-2 rounded-full border ${
+                  category === cat.id 
+                    ? 'bg-blue-600 border-blue-600' 
+                    : 'bg-white border-slate-200'
+                }`}
+              >
+                <Text className={`font-bold text-sm ${
+                  category === cat.id ? 'text-white' : 'text-slate-600'
+                }`}>
+                  {cat.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
 
           <Text className="text-sm font-semibold text-slate-600 mb-2">Description</Text>
           <TextInput
@@ -130,17 +190,28 @@ export default function reportar() {
             </View>
           )}
 
-          <TouchableOpacity className="bg-blue-600 py-4 rounded-lg items-center mt-2 shadow-sm" onPress={submitTicket}>
+          <View className="mb-5 items-center">
+            {location ? (
+               <Text className="text-xs font-bold text-emerald-600">📍 Location Captured Successfully</Text>
+            ) : (
+               <Text className="text-xs font-bold text-amber-500">⏳ Getting GPS Location...</Text>
+            )}
+          </View>
+
+          <TouchableOpacity className="bg-blue-600 py-4 rounded-lg items-center shadow-sm" onPress={submitTicket}>
             <Text className="text-white text-base font-bold">Send Incident</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
-            className="py-4 rounded-lg items-center mt-3 border border-blue-600" 
-            onPress={() => router.push('/(cidadao)/historico')}
+            className="py-4 rounded-lg items-center mt-3 border border-blue-600 mb-10" 
+            onPress={() => router.push({ 
+              pathname: '/(cidadao)/historico', 
+              params: { citizenEmail: citizenEmail } 
+            })}
           >
             <Text className="text-blue-600 text-base font-bold">View History</Text>
           </TouchableOpacity>
-        </View>
+        </ScrollView>
       </TouchableWithoutFeedback>
     </SafeAreaView>
   );

@@ -35,9 +35,9 @@ public class TicketResource {
         }
 
         ticket.status = ticketUpdate.status;
-
-        // 🔴 NOVA LINHA: Atualiza também o técnico atribuído
         ticket.assignedTo = ticketUpdate.assignedTo;
+        ticket.category = ticketUpdate.category;
+        ticket.priority = ticketUpdate.priority;
 
         ticket.update();
 

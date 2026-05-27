@@ -23,16 +23,19 @@ export default function LoginScreen() {
         body: JSON.stringify({ email: email, password: password }),
       });
 
-        if (response.status === 200) {
-          const user = await response.json();
-          
-          if (user.role === 'CITIZEN') {
-            router.replace('/(cidadao)/reportar');
-          } else if (user.role === 'TECHNICIAN') {
-            router.replace({
-              pathname: '/(tecnico)/dashboard',
-              params: { techName: user.name }
-            });
+      if (response.status === 200) {
+        const user = await response.json();
+        
+        if (user.role === 'CITIZEN') {
+          router.replace({
+            pathname: '/(cidadao)/reportar',
+            params: { citizenEmail: email }
+          });
+        } else if (user.role === 'TECHNICIAN') {
+          router.replace({
+            pathname: '/(tecnico)/dashboard',
+            params: { techName: user.name }
+          });
         }
       } else {
         Alert.alert('Login Failed', 'Incorrect email or password.');
