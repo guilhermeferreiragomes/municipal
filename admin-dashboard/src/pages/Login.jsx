@@ -3,7 +3,7 @@ import { useState } from 'react';
 export default function Login({ onLogin }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState(''); // Estado para mostrar erros
+  const [error, setError] = useState('');
 
  const handleSubmit = async (e) => {
     e.preventDefault();
@@ -48,7 +48,6 @@ export default function Login({ onLogin }) {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           
-          {/* Mostra o erro se a password estiver errada */}
           {error && (
             <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm font-bold text-center border border-red-200">
               {error}

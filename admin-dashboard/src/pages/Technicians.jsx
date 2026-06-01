@@ -3,15 +3,11 @@ import { useState, useEffect } from 'react';
 export default function Technicians() {
   const [techs, setTechs] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
-  // Estado para controlar se estamos a criar ou a editar
   const [editingId, setEditingId] = useState(null); 
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
 
-  // 1. READ: Carregar os técnicos da Base de Dados
   const fetchTechs = async () => {
     try {
-      // Pede ao Java APENAS os utilizadores com a role TECHNICIAN
       const response = await fetch('/users?role=TECHNICIAN');
       const data = await response.json();
       setTechs(data);
@@ -23,8 +19,6 @@ export default function Technicians() {
   useEffect(() => {
     fetchTechs();
   }, []);
-
-  // 2. CREATE ou UPDATE: Guardar os dados do formulário
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -35,13 +29,12 @@ export default function Technicians() {
       const response = await fetch(url, {
         method: method,
         headers: { 'Content-Type': 'application/json' },
-        // Forçamos sempre a role para TECHNICIAN para não criarmos Admins por engano
         body: JSON.stringify({ ...formData, role: 'TECHNICIAN' }),
       });
 
       if (response.ok) {
         closeModal();
-        fetchTechs(); // Recarrega a tabela atualizada
+        fetchTechs();
       } else {
         alert("Failed to save. Does this email already exist?");
       }
@@ -50,7 +43,6 @@ export default function Technicians() {
     }
   };
 
-  // 3. DELETE: Apagar Técnico
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to revoke this technician's access?")) return;
     try {
@@ -63,7 +55,6 @@ export default function Technicians() {
     }
   };
 
-  // Controladores do Modal (Janela Flutuante)
   const openCreateModal = () => {
     setEditingId(null);
     setFormData({ name: '', email: '', password: '' });
@@ -72,7 +63,7 @@ export default function Technicians() {
 
   const openEditModal = (tech) => {
     setEditingId(tech.id);
-    setFormData({ name: tech.name, email: tech.email, password: '' }); // Password em branco por segurança
+    setFormData({ name: tech.name, email: tech.email, password: '' });
     setIsModalOpen(true);
   };
 
@@ -82,8 +73,6 @@ export default function Technicians() {
 
   return (
     <div className="animate-in fade-in duration-500 h-full flex flex-col relative">
-      
-      {/* Cabeçalho */}
       <div className="flex justify-between items-center mb-8">
         <div>
           <h3 className="text-xl font-bold text-slate-800">Field Technicians</h3>
@@ -97,7 +86,6 @@ export default function Technicians() {
         </button>
       </div>
 
-      {/* Tabela de Dados */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex-1">
         <table className="w-full text-left border-collapse">
           <thead>
@@ -146,7 +134,6 @@ export default function Technicians() {
         </table>
       </div>
 
-      {/* MODAL (Janela de Criar/Editar) */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl shadow-2xl p-8 w-400px animate-in zoom-in-95 duration-200">
@@ -185,7 +172,7 @@ export default function Technicians() {
                 </label>
                 <input 
                   type="password" 
-                  required={!editingId} // Só é obrigatória se for um novo utilizador
+                  required={!editingId}
                   value={formData.password}
                   onChange={(e) => setFormData({...formData, password: e.target.value})}
                   className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:outline-none transition-all"

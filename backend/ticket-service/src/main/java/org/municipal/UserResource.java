@@ -15,7 +15,6 @@ public class UserResource {
     @Inject
     UserRepository userRepository;
 
-    // Retorna todos os utilizadores (ou filtra por função, ex: ?role=TECHNICIAN)
     @GET
     public List<User> getAllUsers(@QueryParam("role") String role) {
         if (role != null && !role.isEmpty()) {
@@ -24,10 +23,8 @@ public class UserResource {
         return userRepository.listAll();
     }
 
-    // Cria um novo utilizador
     @POST
     public Response createUser(User user) {
-        // Valida se o email já existe usando o teu método do UserRepository
         if (userRepository.findByEmail(user.email) != null) {
             return Response.status(Response.Status.CONFLICT).entity("Email already exists.").build();
         }
@@ -36,7 +33,6 @@ public class UserResource {
         return Response.status(Response.Status.CREATED).entity(user).build();
     }
 
-    // Apaga um utilizador pelo ID
     @DELETE
     @Path("/{id}")
     public Response deleteUser(@PathParam("id") String id) {
@@ -48,7 +44,6 @@ public class UserResource {
         return Response.noContent().build();
     }
 
-    // Atualiza um utilizador existente (Editar)
     @PUT
     @Path("/{id}")
     public Response updateUser(@PathParam("id") String id, User userUpdate) {
@@ -59,13 +54,11 @@ public class UserResource {
 
         user.name = userUpdate.name;
         user.email = userUpdate.email;
-
-        // Só atualiza a password se o admin tiver escrito uma nova
         if (userUpdate.password != null && !userUpdate.password.isEmpty()) {
             user.password = userUpdate.password;
         }
 
-        userRepository.update(user); // Guarda as alterações no MongoDB
+        userRepository.update(user);
         return Response.ok(user).build();
     }
 }
