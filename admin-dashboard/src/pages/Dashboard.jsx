@@ -5,6 +5,9 @@ export default function Dashboard({ activeTab }) {
   const [tickets, setTickets] = useState([]);
   const [technicians, setTechnicians] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null); 
+  const [filterStatus, setFilterStatus] = useState('ALL');
+  const [filterPriority, setFilterPriority] = useState('ALL');
+  const [filterCategory, setFilterCategory] = useState('ALL');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -28,7 +31,6 @@ export default function Dashboard({ activeTab }) {
 
   const handleTicketUpdate = async (ticket, field, value) => {
     if (ticket[field] === value) return;
-
     const updatedTicket = { ...ticket, [field]: value };
 
     try {
@@ -63,6 +65,13 @@ export default function Dashboard({ activeTab }) {
       console.error("Error deleting ticket:", error);
     }
   };
+
+    const displayedTickets = tickets.filter(ticket => {
+    const matchStatus = filterStatus === 'ALL' || ticket.status === filterStatus;
+    const matchPriority = filterPriority === 'ALL' || (ticket.priority || 'LOW') === filterPriority;
+    const matchCategory = filterCategory === 'ALL' || (ticket.category || 'OTHER') === filterCategory;
+    return matchStatus && matchPriority && matchCategory;
+  });
 
   const total = tickets.length;
   const open = tickets.filter(t => t.status === 'OPEN').length;
@@ -99,12 +108,63 @@ export default function Dashboard({ activeTab }) {
             </div>
           </div>
 
+          <div className="flex flex-wrap items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mr-2">Filters:</span>
+            
+            <select 
+              value={filterStatus} 
+              onChange={(e) => setFilterStatus(e.target.value)} 
+              className="p-2.5 text-xs font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer focus:outline-none focus:border-blue-500 transition-colors"
+            >
+              <option value="ALL">All Statuses</option>
+              <option value="OPEN">🔴 Open</option>
+              <option value="IN_PROGRESS">🟡 In Progress</option>
+              <option value="RESOLVED">🟢 Resolved</option>
+            </select>
+
+            <select 
+              value={filterPriority} 
+              onChange={(e) => setFilterPriority(e.target.value)} 
+              className="p-2.5 text-xs font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer focus:outline-none focus:border-blue-500 transition-colors"
+            >
+              <option value="ALL">All Urgencies</option>
+              <option value="HIGH">High Priority</option>
+              <option value="MEDIUM">Medium Priority</option>
+              <option value="LOW">Low Priority</option>
+            </select>
+
+            <select 
+              value={filterCategory} 
+              onChange={(e) => setFilterCategory(e.target.value)} 
+              className="p-2.5 text-xs font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer focus:outline-none focus:border-blue-500 transition-colors"
+            >
+              <option value="ALL">All Categories</option>
+              <option value="ROADS">Roads</option>
+              <option value="LIGHTING">Lighting</option>
+              <option value="TRASH">Trash</option>
+              <option value="WATER">Water</option>
+              <option value="GREENERY">Greenery</option>
+              <option value="TRAFFIC">Traffic</option>
+              <option value="VANDALISM">Vandalism</option>
+              <option value="OTHER">Other</option>
+            </select>
+
+            {(filterStatus !== 'ALL' || filterPriority !== 'ALL' || filterCategory !== 'ALL') && (
+              <button 
+                onClick={() => { setFilterStatus('ALL'); setFilterPriority('ALL'); setFilterCategory('ALL'); }} 
+                className="ml-auto px-4 py-2 text-xs font-bold text-slate-500 hover:text-red-600 bg-slate-100 hover:bg-red-50 rounded-lg transition-colors"
+              >
+                Clear Filters ✕
+              </button>
+            )}
+          </div>
+
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden relative">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-slate-50 text-slate-400 text-[10px] uppercase font-black border-b border-slate-200">
                   <th className="py-4 px-6 tracking-widest">Incident</th>
-                  <th className="py-4 px-6 tracking-widest">Category</th> {/* 🔴 NOVA COLUNA */}
+                  <th className="py-4 px-6 tracking-widest">Category</th>
                   <th className="py-4 px-6 tracking-widest">Urgency</th>
                   <th className="py-4 px-6 tracking-widest">Status</th>
                   <th className="py-4 px-6 tracking-widest">Assigned To</th>
@@ -112,21 +172,16 @@ export default function Dashboard({ activeTab }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {tickets.map((ticket) => (
+                {displayedTickets.map((ticket) => (
                   <tr key={ticket.id} className="hover:bg-slate-50 transition-colors">
-                    
-                    {/* TÍTULO LIMPADO */}
                     <td className="py-4 px-6">
                        <p className="text-slate-800 font-bold">{ticket.title}</p>
                     </td>
-
-                    {/* 🔴 NOVA CÉLULA: CATEGORIA */}
                     <td className="py-4 px-6">
                        <span className="bg-slate-100 text-slate-500 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-widest border border-slate-200">
                          🏷️ {ticket.category || 'OTHER'}
                        </span>
                     </td>
-                    
                     <td className="py-4 px-6">
                       <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border
                           ${ticket.priority === 'HIGH' ? 'bg-red-50 text-red-600 border-red-100' : ''}
@@ -136,7 +191,6 @@ export default function Dashboard({ activeTab }) {
                         {ticket.priority || 'LOW'}
                       </span>
                     </td>
-
                     <td className="py-4 px-6">
                       <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border
                           ${ticket.status === 'OPEN' ? 'bg-red-50 text-red-600 border-red-100' : ''}
@@ -146,7 +200,6 @@ export default function Dashboard({ activeTab }) {
                         {ticket.status.replace('_', ' ')}
                       </span>
                     </td>
-
                     <td className="py-4 px-6">
                        {ticket.assignedTo ? (
                           <span className="text-xs font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-md">{ticket.assignedTo}</span>
@@ -154,7 +207,6 @@ export default function Dashboard({ activeTab }) {
                           <span className="text-xs text-slate-400 italic">Unassigned</span>
                        )}
                     </td>
-
                     <td className="py-4 px-6 text-right">
                       <button 
                         onClick={() => setSelectedTicket(ticket)}
@@ -168,8 +220,10 @@ export default function Dashboard({ activeTab }) {
               </tbody>
             </table>
             
-            {tickets.length === 0 && (
-              <div className="p-8 text-center text-slate-400 text-sm">No tickets available in the system.</div>
+            {displayedTickets.length === 0 && (
+              <div className="p-8 text-center text-slate-400 text-sm">
+                No tickets match your current filters.
+              </div>
             )}
           </div>
         </div>
@@ -188,11 +242,10 @@ export default function Dashboard({ activeTab }) {
         </div>
       )}
 
-{selectedTicket && (
+      {selectedTicket && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-200 p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
             
-            {/* CABEÇALHO MAIS ESTREITO E LIMPO */}
             <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white z-10">
               <div className="flex items-center gap-3">
                 <h2 className="text-xl font-bold text-slate-800">Incident Details</h2>
@@ -208,13 +261,10 @@ export default function Dashboard({ activeTab }) {
               </button>
             </div>
             
-            {/* CORPO - DUAS COLUNAS BEM DIMENSIONADAS */}
             <div className="flex-1 overflow-y-auto flex flex-col md:flex-row bg-white">
                
-               {/* LADO ESQUERDO: INFORMAÇÃO COMPACTA */}
                <div className="w-full md:w-2/3 p-6 space-y-6">
                   
-                  {/* Info */}
                   <div>
                     <h3 className="text-lg font-bold text-slate-800 mb-2">{selectedTicket.title}</h3>
                     <p className="text-slate-600 leading-relaxed text-sm bg-slate-50 p-4 rounded-xl border border-slate-100">
@@ -222,7 +272,6 @@ export default function Dashboard({ activeTab }) {
                     </p>
                   </div>
 
-                  {/* Imagem (Mais pequena e bem enquadrada) */}
                   {selectedTicket.imageUrl && selectedTicket.imageUrl !== 'No image attached' && (
                     <div>
                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Attached Evidence</h4>
@@ -232,7 +281,6 @@ export default function Dashboard({ activeTab }) {
                     </div>
                   )}
 
-                  {/* Mapa (Botão mais subtil) */}
                   <div>
                      <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Exact Location</h4>
                      {selectedTicket.latitude && selectedTicket.longitude ? (
@@ -256,11 +304,9 @@ export default function Dashboard({ activeTab }) {
                   </div>
                </div>
 
-               {/* LADO DIREITO: BARRA DE CONTROLOS APERTADA */}
                <div className="w-full md:w-1/3 p-6 bg-slate-50 border-l border-slate-100 flex flex-col shrink-0">
                   
                   <div className="flex-1 space-y-5">
-                    {/* Urgência */}
                     <div>
                       <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1.5">Urgency Level</label>
                       <select
@@ -274,7 +320,6 @@ export default function Dashboard({ activeTab }) {
                       </select>
                     </div>
 
-                    {/* Estado */}
                     <div>
                       <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1.5">Set Status</label>
                       <select
@@ -288,7 +333,6 @@ export default function Dashboard({ activeTab }) {
                       </select>
                     </div>
 
-                    {/* Delegação */}
                     <div>
                       <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1.5">Delegate to Team</label>
                       <select
@@ -304,7 +348,6 @@ export default function Dashboard({ activeTab }) {
                     </div>
                   </div>
 
-                  {/* Botões de Ação Pequenos e Normais */}
                   <div className="mt-6 space-y-3 pt-6 border-t border-slate-200">
                     <button 
                        onClick={() => setSelectedTicket(null)}
