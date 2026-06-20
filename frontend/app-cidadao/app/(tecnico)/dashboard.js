@@ -55,11 +55,11 @@ export default function TechnicalDashboard() {
     }
   };
 
-  const openMaps = (lat, lng) => {
-    const url = `http://googleusercontent.com/maps.google.com/maps?q=${lat},${lng}`;
-    Linking.openURL(url);
-  };
-
+    const openMaps = (lat, lng) => {
+        const url = `https://maps.google.com/maps?q=${lat},${lng}`;
+        Linking.openURL(url);
+    };
+    
 const filteredTickets = tickets.filter(ticket => {
     const status = ticket.status || 'OPEN';
     if (ticket.assignedTo !== techName) return false;
@@ -144,7 +144,6 @@ const filteredTickets = tickets.filter(ticket => {
                   </View>
                 </View>
 
-                {/* ALERTAS DE PRIORIDADE NA LISTA */}
                 {item.priority === 'HIGH' && (
                   <Text className="text-red-400 text-[10px] font-black uppercase mb-2">🚨 High Priority</Text>
                 )}

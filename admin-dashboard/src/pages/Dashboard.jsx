@@ -54,7 +54,8 @@ export default function Dashboard({ activeTab }) {
   const handleDeleteTicket = async (id) => {
     if (!window.confirm("Are you sure you want to delete this incident report?")) return;
     try {
-      const response = await fetch(`/tickets/${id}`, { method: 'DELETE' });
+      const response = await fetch(`/tickets/${id}`, 
+      { method: 'DELETE' });
       if (response.ok) {
         setTickets(tickets.filter(t => t.id !== id));
         if (selectedTicket && selectedTicket.id === id) {
@@ -285,7 +286,7 @@ export default function Dashboard({ activeTab }) {
                      <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Exact Location</h4>
                      {selectedTicket.latitude && selectedTicket.longitude ? (
                         <a 
-                          href={`http://googleusercontent.com/maps.google.com/maps?q=${selectedTicket.latitude},${selectedTicket.longitude}`}
+                          href={`https://maps.google.com/maps?q=${selectedTicket.latitude},${selectedTicket.longitude}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center gap-3 bg-blue-50/50 hover:bg-blue-50 w-full p-4 rounded-xl border border-blue-100 transition-colors shadow-sm"
