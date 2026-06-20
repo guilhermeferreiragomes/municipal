@@ -3,11 +3,11 @@ import { View, Text, FlatList, TouchableOpacity, SafeAreaView, Alert, RefreshCon
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { API_URL } from '../../config';
 
+let hasNotifiedThisSession = false;
+
 export default function historico() {
   const [tickets, setTickets] = useState([]);
-  const [refreshing, setRefreshing] = useState(false);
-  const [hasNotified, setHasNotified] = useState(false);
-  
+  const [refreshing, setRefreshing] = useState(false);  
   const router = useRouter();
   const { citizenEmail } = useLocalSearchParams(); 
 
@@ -23,14 +23,14 @@ export default function historico() {
             const sortedTickets = myTickets.reverse();
       setTickets(sortedTickets);
 
-      if (!hasNotified) {
+      if (!hasNotifiedThisSession) {
         const resolvedCount = sortedTickets.filter(t => t.status === 'RESOLVED').length;
         if (resolvedCount > 0) {
           Alert.alert(
             "✅ Good News!",
             `The municipality team has successfully resolved ${resolvedCount} of your reported incidents. Thank you for making our city better!`
           );
-          setHasNotified(true);
+          hasNotifiedThisSession = true;
         }
       }
 
