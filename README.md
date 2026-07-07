@@ -59,3 +59,12 @@ MuniciPal implements a strict **3-Tier Client-Server Architecture**:
 
 ---
 
+---
+
+## 👤 Author
+
+Developed with 💛 by **Guilherme Gomes**. 
+
+🎓 *This platform was built as a Software Engineering university project and proudly achieved a final grade of **26 out of 30**.*
+
+If you want to know more about this or other projects, feel free to reach out via [LinkedIn](https://www.linkedin.com/in/o-teu-perfil-aqui/).
