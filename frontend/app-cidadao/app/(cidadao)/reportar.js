@@ -86,7 +86,8 @@ export default function reportar() {
   };
 
   
-
+  // ------
+  
   const submitTicket = async () => {
     Keyboard.dismiss();
     if (!title || !description) {
